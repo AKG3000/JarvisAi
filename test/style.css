@@ -1,0 +1,22 @@
+.container {
+  width: 300;
+  margin-right: 15px;
+  background-color: aqua;
+  border-radius: 10px;
+  padding: 10px;
+  
+}
+.cont-header{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.cont-title{
+  flex: 1;
+  text-align: center;
+}
+.header-right{
+  display: flex;
+  flex-direction: row;
+}

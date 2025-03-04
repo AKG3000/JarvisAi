@@ -1,39 +1,50 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import { Stack } from "expo-router";
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import { Platform } from "react-native";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// Initialize Apollo Client
+// Get the correct localhost URL based on platform
+const localhostUrl = Platform.select({
+  ios: 'http://localhost:4000/graphql',
+  android: 'http://10.0.2.2:4000/graphql',
+  default: 'http://localhost:4000/graphql',
+});
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const client = new ApolloClient({
+  uri: localhostUrl,
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'ignore',
+    },
+    query: {
+      fetchPolicy: 'no-cache',
+      errorPolicy: 'all',
+    },
+  },
+  connectToDevTools: true,
+});
+
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ApolloProvider client={client}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen 
+          name="index" 
+          options={{ 
+            headerShown: false,
+          }} 
+        />
+        <Stack.Screen 
+          name="todo" 
+          options={{ 
+            headerShown: true,
+            title: 'ToDo List'
+          }} 
+        />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    </ApolloProvider>
   );
 }
