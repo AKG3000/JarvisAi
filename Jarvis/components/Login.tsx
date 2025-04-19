@@ -13,7 +13,7 @@ interface LoginProps {
   setPassword: (password: string) => void;
   userName: string;
   setUserName: (userName: string) => void;
-  onAuthSuccess: () => void;
+  onAuthSuccess: (userName: string) => void;  // Modified to pass userName
 }
 
 // Define GraphQL mutations
@@ -31,14 +31,14 @@ const LOGIN_MUTATION = gql`
 
 const REGISTER_MUTATION = gql`
   mutation Register($name: String!, $email: String!, $password: String!) {
-    register(name: $name, email: $email, password: $password) {
-      user {
-        email
-        id
-      }
-      token
+  register(name: $name, email: $email, password: $password) {
+    user {
+      email,
+      id
     }
+    token
   }
+}
 `;
 
 const loginSchema = yup.object().shape({
@@ -67,13 +67,12 @@ const Login = ({
   setPassword,
   userName,
   setUserName,
-  onAuthSuccess,
+  onAuthSuccess
 }: LoginProps) => {
   const [isRegistering, setIsRegistering] = useState(false);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [login, { loading: loginLoading }] = useMutation(LOGIN_MUTATION);
-  const [register, { loading: registerLoading }] =
-    useMutation(REGISTER_MUTATION);
+  const [errors,setErrors] = useState<{[key: string]: string}>({});
+  const [login,{loading:loginLoading}]=useMutation(LOGIN_MUTATION); 
+  const [register,{loading:registerLoading}]=useMutation(REGISTER_MUTATION);
 
   const handleLogin = async () => {
     try {
@@ -83,60 +82,46 @@ const Login = ({
         variables: { email, password },
       });
       if (data.login.token) {
-        onAuthSuccess();
+        onAuthSuccess(data.login.user.name); // Pass the user name
       }
-      // Proceed with login logic
-    } catch (error:any) {
+    } catch (error) {
       if (error instanceof yup.ValidationError) {
-        const newErrors: { [key: string]: string } = {};
+        const newErrors: {[key: string]: string} = {};
         error.inner.forEach((err) => {
           if (err.path) {
             newErrors[err.path] = err.message;
           }
         });
         setErrors(newErrors);
-      } else {
-        setErrors({ auth: error.message || 'Login failed. Please try again.' });
+      }else {
+        console.log("Login error:", error);
       }
     }
   };
 
   const handleRegister = async () => {
     try {
-      await registerSchema.validate(
-        { userName, email, password },
-        { abortEarly: false }
-      );
+      await registerSchema.validate({ userName, email, password }, { abortEarly: false });
       console.log("Registration validation passed");
-
-      console.log("Registration Request:", {
-        mutation: REGISTER_MUTATION.loc?.source.body,
-        variables: { name: userName, email, password }
-      });
       const { data } = await register({
-        variables: { name: userName, email, password },
+        variables: { name, email, password },
       });
       if (data.register.token) {
-        onAuthSuccess();
+        onAuthSuccess(data.login.user.name);
       }
       // Proceed with registration logic
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof yup.ValidationError) {
-        const newErrors: { [key: string]: string } = {};
+        const newErrors: {[key: string]: string} = {};
         error.inner.forEach((err) => {
           if (err.path) {
             newErrors[err.path] = err.message;
           }
         });
         setErrors(newErrors);
-      } else {
-        console.error("Registration error:", {
-          message: error.message,
-          networkError: error.networkError?.result,
-          graphQLErrors: error.graphQLErrors,
-          operation: error.operation?.variables,
-        });
-        setErrors({ auth: error.message || 'Registration failed. Please try again.' });
+      }
+      else {
+        console.log("Registration error:", error);
       }
     }
   };
@@ -173,33 +158,34 @@ const Login = ({
           width={"80%"}
           error={errors.password}
         />
-        {errors.auth && (
-  <Text style={styles.mintitle}>
-    {errors.auth}
-  </Text>
-)}
         {!isRegistering ? (
           <>
-            <CustomButton title="Login" onPress={handleLogin} />
+            <CustomButton
+              title="Login"
+              onPress={handleLogin}
+            />
             <Text style={styles.mintitle}>Not Logged In?</Text>
             <CustomButton
               title="Register"
               onPress={() => {
                 setIsRegistering(true);
                 setErrors({});
-              }}
+            }}
             />
           </>
         ) : (
           <>
-            <CustomButton title="Register" onPress={handleRegister} />
+            <CustomButton
+              title="Register"
+              onPress={handleRegister}
+            />
             <Text style={styles.mintitle}>Already have an account?</Text>
             <CustomButton
               title="Back to Login"
               onPress={() => {
                 setIsRegistering(false);
                 setErrors({});
-              }}
+            }}
             />
           </>
         )}

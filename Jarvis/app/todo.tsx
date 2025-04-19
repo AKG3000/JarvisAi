@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import TaskCreationModal from "@/components/TaskCreationModal";
+import Layout from "@/components/Layout";
 
 interface TodoItem {
   id: string;
@@ -33,7 +34,11 @@ const ToDoScreen = () => {
   const [newTodo, setNewTodo] = useState("");
 
   // Add new function to handle task creation
-  const handleCreateTask = (title: string,description:string,dueDate:string) => {
+  const handleCreateTask = (
+    title: string,
+    description: string,
+    dueDate: string
+  ) => {
     setTodos([
       ...todos,
       {
@@ -72,65 +77,70 @@ const ToDoScreen = () => {
   // Modify the updateTodoText function
   const updateTodoText = (id: string, newTitle: string) => {
     setTodos(
-      todos.map((todo) =>
-        todo.id === id ? { ...todo, text: newTitle } : todo
-      )
+      todos.map((todo) => (todo.id === id ? { ...todo, text: newTitle } : todo))
     );
   };
 
   // Update the renderTodoItem component
   const renderTodoItem = ({ item }: { item: TodoItem }) => {
     return (
-      <View style={styles.todoItem}>
-        <View style={styles.todoContent}>
-          {item.isEditing ? (
-            <TextInput
-              style={[styles.editInput, { color: '#fff' }]}
-              value={item.title}
-              onChangeText={(newText) => updateTodoText(item.id, newText)}
-              onSubmitEditing={() => toggleEditMode(item.id)}
-              autoFocus
-              multiline
-            />
-          ) : (
-            <TouchableOpacity onPress={() => toggleEditMode(item.id)}>
-              <Text style={styles.todoText}>{item.title}</Text>
+      <Layout
+        userName={""}
+        onLogout={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+      >
+        <View style={styles.todoItem}>
+          <View style={styles.todoContent}>
+            {item.isEditing ? (
+              <TextInput
+                style={[styles.editInput, { color: "#fff" }]}
+                value={item.title}
+                onChangeText={(newText) => updateTodoText(item.id, newText)}
+                onSubmitEditing={() => toggleEditMode(item.id)}
+                autoFocus
+                multiline
+              />
+            ) : (
+              <TouchableOpacity onPress={() => toggleEditMode(item.id)}>
+                <Text style={styles.todoText}>{item.title}</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => deleteTodo(item.id)}
+            >
+              <Text style={styles.deleteButtonText}>×</Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => deleteTodo(item.id)}
-          >
-            <Text style={styles.deleteButtonText}>×</Text>
-          </TouchableOpacity>
+          </View>
+          <View style={styles.actionButtons}>
+            {item.status !== "todo" && (
+              <TouchableOpacity
+                style={[styles.statusButton, styles.todoButton]}
+                onPress={() => updateTodoStatus(item.id, "todo")}
+              >
+                <Text style={styles.statusButtonText}>Todo</Text>
+              </TouchableOpacity>
+            )}
+            {item.status !== "inProgress" && (
+              <TouchableOpacity
+                style={[styles.statusButton, styles.inProgressButton]}
+                onPress={() => updateTodoStatus(item.id, "inProgress")}
+              >
+                <Text style={styles.statusButtonText}>In Progress</Text>
+              </TouchableOpacity>
+            )}
+            {item.status !== "completed" && (
+              <TouchableOpacity
+                style={[styles.statusButton, styles.completedButton]}
+                onPress={() => updateTodoStatus(item.id, "completed")}
+              >
+                <Text style={styles.statusButtonText}>Complete</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-        <View style={styles.actionButtons}>
-          {item.status !== "todo" && (
-            <TouchableOpacity
-              style={[styles.statusButton, styles.todoButton]}
-              onPress={() => updateTodoStatus(item.id, "todo")}
-            >
-              <Text style={styles.statusButtonText}>Todo</Text>
-            </TouchableOpacity>
-          )}
-          {item.status !== "inProgress" && (
-            <TouchableOpacity
-              style={[styles.statusButton, styles.inProgressButton]}
-              onPress={() => updateTodoStatus(item.id, "inProgress")}
-            >
-              <Text style={styles.statusButtonText}>In Progress</Text>
-            </TouchableOpacity>
-          )}
-          {item.status !== "completed" && (
-            <TouchableOpacity
-              style={[styles.statusButton, styles.completedButton]}
-              onPress={() => updateTodoStatus(item.id, "completed")}
-            >
-              <Text style={styles.statusButtonText}>Complete</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
+      </Layout>
     );
   };
 

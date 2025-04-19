@@ -40,8 +40,13 @@ export default function RootLayout() {
         <Stack.Screen 
           name="todo" 
           options={{ 
-            headerShown: true,
-            title: 'ToDo List'
+            headerShown: false,
+          }} 
+        />
+        <Stack.Screen 
+          name="home" 
+          options={{ 
+            headerShown: false,
           }} 
         />
       </Stack>

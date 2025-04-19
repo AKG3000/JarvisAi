@@ -9,7 +9,10 @@ const HomeScreen = () => {
   const [userName, setUserName] = useState("");
 
   const handleAuthSuccess = () => {
-    router.push('/todo');
+    router.push({
+      pathname: "/home",
+      params: {userName: userName},
+    });
   };
 
   return (
