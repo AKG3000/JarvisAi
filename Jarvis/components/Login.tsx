@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity, Image } from "react-native";
 import CustomInput from "./Input";
 import CustomButton from "./Button";
 import { useState } from "react";
@@ -70,9 +70,9 @@ const Login = ({
   onAuthSuccess
 }: LoginProps) => {
   const [isRegistering, setIsRegistering] = useState(false);
-  const [errors,setErrors] = useState<{[key: string]: string}>({});
-  const [login,{loading:loginLoading}]=useMutation(LOGIN_MUTATION); 
-  const [register,{loading:registerLoading}]=useMutation(REGISTER_MUTATION);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [login, {loading: loginLoading}] = useMutation(LOGIN_MUTATION);
+  const [register, {loading: registerLoading}] = useMutation(REGISTER_MUTATION);
 
   const handleLogin = async () => {
     try {
@@ -128,67 +128,88 @@ const Login = ({
   return (
     <View style={styles.parentContainer}>
       <View style={styles.container}>
-        <Text style={styles.subtitle}>Welcome to Jarvis</Text>
+        <Text style={styles.title}>Welcome to Jarvis</Text>
         <Text style={styles.subtitle}>
-          {isRegistering ? "Register" : "Kindly Login"}
+          Login or Sign up to access your account
         </Text>
+
+        <View style={styles.tabContainer}>
+          <TouchableOpacity 
+            style={[styles.tab, !isRegistering && styles.activeTab]}
+            onPress={() => setIsRegistering(false)}
+          >
+            <Text style={[styles.tabText, !isRegistering && styles.activeTabText]}>Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tab, isRegistering && styles.activeTab]}
+            onPress={() => setIsRegistering(true)}
+          >
+            <Text style={[styles.tabText, isRegistering && styles.activeTabText]}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.socialButton}>
+          <Image 
+            source={{ uri: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png' }}
+            style={styles.socialIcon}
+          />
+          <Text style={styles.socialButtonText}>Login with Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.socialButton}>
+          <Image 
+            source={{ uri: 'https://www.apple.com/ac/globalnav/7/en_US/images/be15095f-5a20-57d0-ad14-cf4c638e223a/globalnav_apple_image__b5er5ngrzxqq_large.svg' }}
+            style={styles.socialIcon}
+          />
+          <Text style={styles.socialButtonText}>Login with Apple</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.dividerText}>or continue with email</Text>
+
         {isRegistering && (
           <CustomInput
-            label="UserName"
-            type="email"
+            label="Username"
             value={userName}
             onChangeText={setUserName}
-            width={"80%"}
             error={errors.userName}
+            placeholder="Enter your username"
           />
         )}
+
         <CustomInput
-          label="Email"
-          type="email"
+          label="Email Address"
           value={email}
           onChangeText={setEmail}
-          width={"80%"}
           error={errors.email}
+          placeholder="Enter your email"
         />
+
         <CustomInput
           label="Password"
-          type="password"
           value={password}
           onChangeText={setPassword}
-          width={"80%"}
           error={errors.password}
+          secureTextEntry
+          placeholder="Enter your password"
         />
-        {!isRegistering ? (
-          <>
-            <CustomButton
-              title="Login"
-              onPress={handleLogin}
-            />
-            <Text style={styles.mintitle}>Not Logged In?</Text>
-            <CustomButton
-              title="Register"
-              onPress={() => {
-                setIsRegistering(true);
-                setErrors({});
-            }}
-            />
-          </>
-        ) : (
-          <>
-            <CustomButton
-              title="Register"
-              onPress={handleRegister}
-            />
-            <Text style={styles.mintitle}>Already have an account?</Text>
-            <CustomButton
-              title="Back to Login"
-              onPress={() => {
-                setIsRegistering(false);
-                setErrors({});
-            }}
-            />
-          </>
+
+        {!isRegistering && (
+          <TouchableOpacity style={styles.forgotPassword}>
+            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+          </TouchableOpacity>
         )}
+
+        <CustomButton
+          title={isRegistering ? "Sign Up" : "Login"}
+          onPress={isRegistering ? handleRegister : handleLogin}
+          style={styles.mainButton}
+        />
+
+        <Text style={styles.termsText}>
+          By signing in with an account, you agree to SO's{' '}
+          <Text style={styles.linkText}>Terms of Service</Text> and{' '}
+          <Text style={styles.linkText}>Privacy Policy</Text>.
+        </Text>
       </View>
     </View>
   );
@@ -196,40 +217,96 @@ const Login = ({
 
 const styles = StyleSheet.create({
   parentContainer: {
-    display: "flex",
-    height: "100%",
-    backgroundColor: "#f4f4f4",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: 0,
+    flex: 1,
+    backgroundColor: '#fff',
   },
   container: {
-    width: "100%",
-    height: "100%",
-    backgroundColor: "#fff",
-    shadowColor: "#000",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: 20,
-    fontWeight: "bold",
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
   },
   title: {
-    fontWeight: "bold",
-    fontSize: 50,
-    color: "#fb5b5a",
+    fontSize: 32,
+    fontWeight: 'bold',
+    marginTop: 40,
     marginBottom: 10,
   },
   subtitle: {
-    fontWeight: "bold",
-    fontSize: 20,
-    color: "#fb5b5a",
-    marginBottom: 10,
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 30,
+    textAlign: 'center',
   },
-  mintitle: {
-    fontWeight: "bold",
-    fontSize: 10,
-    color: "#fb5b5a",
+  tabContainer: {
+    flexDirection: 'row',
+    marginBottom: 30,
+    borderRadius: 10,
+    backgroundColor: '#F0F0F0',
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  activeTab: {
+    backgroundColor: '#fff',
+  },
+  tabText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  activeTabText: {
+    color: '#000',
+    fontWeight: '500',
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    width: '100%',
+  },
+  socialIcon: {
+    width: 24,
+    height: 24,
+    marginRight: 12,
+  },
+  socialButtonText: {
+    fontSize: 16,
+    color: '#000',
+  },
+  dividerText: {
+    color: '#666',
+    marginVertical: 20,
+  },
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotPasswordText: {
+    color: '#666',
+  },
+  mainButton: {
+    width: '100%',
+    backgroundColor: '#2196F3',
+    borderRadius: 12,
+  },
+  termsText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  linkText: {
+    color: '#2196F3',
+    textDecorationLine: 'underline',
   },
 });
 
